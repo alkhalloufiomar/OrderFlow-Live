@@ -10,7 +10,7 @@
     
     <script>
         // *******************************************************************
-        // 🚨 ATTENTION : COLLER VOS CLÉS SUPABASE ICI
+        // 🔑 VOS CLÉS SUPABASE (CORRECTES)
         // *******************************************************************
         const SUPABASE_URL = 'https://ryziewceezbnnujoopii.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g'; 
@@ -180,7 +180,7 @@
             font-weight: bold;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 1001;
-            display: none; /* Caché par défaut */
+            display: none;
         }
     </style>
 </head>
@@ -219,18 +219,15 @@
 
         let cart = {};
         let orderCounter = parseInt(localStorage.getItem('orderCounter')) || 100;
-        let lastOrderNumber = null; // Pour suivre la dernière commande passée
+        let lastOrderNumber = null;
 
-        // --- ÉLÉMENTS DU DOM ---
         const menuItemsContainer = document.getElementById('menu-items');
         const cartTotalSpan = document.getElementById('cart-total');
         const validateOrderButton = document.getElementById('validate-order');
         const confirmationModal = document.getElementById('confirmationModal');
         const orderNumberDisplay = document.getElementById('orderNumberDisplay');
         const closeModalButton = document.getElementById('closeModal');
-        const readyNotification = document.getElementById('readyNotification'); // NOUVEAU
-
-        // [Reste des fonctions renderMenu, updateTotal, generateOrderNumber inchangées]
+        const readyNotification = document.getElementById('readyNotification');
 
         function renderMenu() {
             menuItemsContainer.innerHTML = '';
@@ -289,7 +286,7 @@
                 .then(response => {
                     if (response.error) {
                         console.error("Erreur Supabase: ", response.error);
-                        alert("Erreur d'envoi de la commande !");
+                        alert("Erreur d'envoi de la commande ! Vérifiez RLS dans Supabase.");
                     } else {
                         console.log("Commande envoyée à Supabase !");
                     }
@@ -297,10 +294,8 @@
                 .catch(error => console.error("Erreur de connexion Supabase: ", error));
         }
 
-        // --- GESTION DU REALTIME ET NOTIFICATION DU CLIENT ---
         function playNotificationSound() {
-            // Utiliser l'API Audio pour jouer un son court
-            const audio = new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/success.mp3'); // Un son de succès simple
+            const audio = new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/success.mp3'); 
             audio.play().catch(e => console.log('Impossible de jouer le son (bloqué par le navigateur).'));
         }
 
@@ -308,14 +303,12 @@
             supabase
                 .channel('order-updates')
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload) => {
-                    // Si la commande mise à jour est la dernière commande passée par CE client ET que le statut est 'PRETE_RETRAIT'
                     if (payload.new.numero_client === lastOrderNumber && payload.new.statut === 'PRETE_RETRAIT') {
                         const orderNum = payload.new.numero_client;
                         readyNotification.textContent = `🚨 Commande ${orderNum} PRÊTE ! Veuillez la retirer à la caisse.`;
                         readyNotification.style.display = 'block';
                         playNotificationSound();
 
-                        // Masquer la notification après 10 secondes
                         setTimeout(() => {
                             readyNotification.style.display = 'none';
                         }, 10000);
@@ -323,9 +316,6 @@
                 })
                 .subscribe();
         }
-
-        // --- ÉVÉNEMENTS ---
-        // [Reste des événements (increase/decrease) inchangés]
 
         menuItemsContainer.addEventListener('click', (event) => {
             const button = event.target.closest('button');
@@ -351,7 +341,7 @@
             const total = parseFloat(cartTotalSpan.textContent);
             if (total > 0) {
                 const orderNumber = generateOrderNumber();
-                lastOrderNumber = orderNumber; // 🚨 Enregistrer le numéro de commande du client
+                lastOrderNumber = orderNumber;
                 const itemsInOrder = [];
                 for (const itemId in cart) {
                     const item = menuData.find(m => m.id === itemId);
@@ -379,7 +369,7 @@
 
         // --- INITIALISATION ---
         renderMenu();
-        subscribeToReadyNotifications(); // 🚨 Activer l'écoute des mises à jour
+        subscribeToReadyNotifications();
     </script>
 </body>
 </html>
