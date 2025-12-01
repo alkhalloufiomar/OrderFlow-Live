@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OrderFlow Beta - Écran Cuisine (KDS)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
-        // 💡 REMPLACEZ CES VALEURS PAR VOS VRAIES CLÉS SUPABASE
-        const SUPABASE_URL = 'VOTRE_URL_PROJET'; 
-        const SUPABASE_KEY = 'VOTRE_CLE_ANON'; 
+        // *******************************************************************
+        // 🚨 ATTENTION : COLLER VOS CLÉS SUPABASE ICI
+        // *******************************************************************
+        const SUPABASE_URL = 'https://ryziewceezbnnujoopii.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g'; 
+        // *******************************************************************
 
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
@@ -17,12 +22,12 @@
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
-            background-color: #2c3e50; /* Fond sombre pour écran de cuisine */
+            background-color: #2c3e50;
             color: #ecf0f1;
             padding: 10px;
         }
         h1 {
-            color: #f1c40f; /* Couleur vive pour le titre */
+            color: #f1c40f;
             text-align: center;
             margin-bottom: 20px;
             font-size: 2.2em;
@@ -38,15 +43,15 @@
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            border-left: 5px solid #2ecc71; /* Vert pour les nouvelles commandes */
+            border-left: 5px solid #2ecc71;
         }
         .kds-card.prepared {
             opacity: 0.8; 
-            border-left: 5px solid #e67e22; /* Orange pour prêtes */
+            border-left: 5px solid #e67e22;
         }
         .kds-card h2 {
             margin: 0 0 10px 0;
-            color: #e67e22; /* Orange vif pour le numéro */
+            color: #e67e22;
             font-size: 1.8em;
         }
         .kds-card ul {
@@ -83,7 +88,7 @@
             background-color: #d35400;
         }
         .kds-card button.finish {
-            background-color: #e74c3c; /* Rouge pour terminer */
+            background-color: #e74c3c;
         }
         .kds-card button.finish:hover {
             background-color: #c0392b;
@@ -105,20 +110,17 @@
     </div>
 
     <script>
-        // --- ÉLÉMENTS DU DOM ---
         const kdsGrid = document.getElementById('kds-grid');
         const noOrdersMessage = document.getElementById('noOrdersMessage');
         
-        // --- FONCTION D'AFFICHAGE KDS ---
         async function renderKDS() {
             kdsGrid.innerHTML = '';
             
-            // Récupérer les commandes qui sont actives ou en préparation
             const { data: activeOrders, error } = await supabase
                 .from('orders')
                 .select('*')
                 .in('statut', ['PAYEE_ACTIVE', 'EN_PREPARATION', 'PRETE_RETRAIT'])
-                .order('created_at', { ascending: true }); // Utilisation de created_at si date_heure_creation n'existe pas encore
+                .order('created_at', { ascending: true }); 
 
             if (error) {
                 console.error('Erreur Supabase:', error);
@@ -136,7 +138,6 @@
                 const orderId = order.id;
                 let buttonText, nextStatus, buttonClass;
                 
-                // Logique pour déterminer le bouton et le statut
                 switch (order.statut) {
                     case 'PAYEE_ACTIVE':
                         buttonText = 'Commencer Préparation';
@@ -145,7 +146,7 @@
                         break;
                     case 'EN_PREPARATION':
                         buttonText = 'Marquer Prête';
-                        nextStatus = 'PRETE_RETRAIT';
+                        nextStatus = 'PRETE_RETRAIT'; // 🚨 Statut qui déclenche la notification
                         buttonClass = 'mark-ready';
                         break;
                     case 'PRETE_RETRAIT':
@@ -194,6 +195,7 @@
         });
 
         // --- INITIALISATION et RAFRAÎCHISSEMENT ---
+        // Le KDS se rafraîchit toujours pour afficher les changements en temps réel
         setInterval(renderKDS, 2000); 
 
         renderKDS();

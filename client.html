@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OrderFlow Beta - Votre Commande</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
-        // 💡 REMPLACEZ CES VALEURS PAR VOS VRAIES CLÉS SUPABASE
-        const SUPABASE_URL = 'VOTRE_URL_PROJET'; 
-        const SUPABASE_KEY = 'VOTRE_CLE_ANON'; 
+        // *******************************************************************
+        // 🚨 ATTENTION : COLLER VOS CLÉS SUPABASE ICI
+        // *******************************************************************
+        const SUPABASE_URL = 'https://ryziewceezbnnujoopii.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g'; 
+        // *******************************************************************
 
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
@@ -112,7 +117,7 @@
             background-color: #27ae60;
         }
         .confirmation-modal {
-            display: none; /* Hidden by default */
+            display: none;
             position: fixed;
             z-index: 1000;
             left: 0;
@@ -146,7 +151,7 @@
         }
         .modal-content strong {
             font-size: 1.8em;
-            color: #e67e22; /* Orange pour le numéro de commande */
+            color: #e67e22;
             display: block;
             margin: 15px 0;
         }
@@ -161,6 +166,21 @@
         }
         .modal-content button:hover {
             background-color: #2980b9;
+        }
+        /* Style pour la notification de commande prête */
+        #readyNotification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #e67e22;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            display: none; /* Caché par défaut */
         }
     </style>
 </head>
@@ -187,8 +207,9 @@
         </div>
     </div>
 
+    <div id="readyNotification"></div>
+
     <script>
-        // --- DONNÉES DU MENU ---
         const menuData = [
             { id: 'burger', name: 'Big Burger', price: 9.50 },
             { id: 'frites', name: 'Grandes Frites', price: 3.00 },
@@ -196,8 +217,9 @@
             { id: 'soda', name: 'Maxi Soda', price: 2.50 }
         ];
 
-        let cart = {}; // { itemId: quantity }
-        let orderCounter = parseInt(localStorage.getItem('orderCounter')) || 100; 
+        let cart = {};
+        let orderCounter = parseInt(localStorage.getItem('orderCounter')) || 100;
+        let lastOrderNumber = null; // Pour suivre la dernière commande passée
 
         // --- ÉLÉMENTS DU DOM ---
         const menuItemsContainer = document.getElementById('menu-items');
@@ -206,12 +228,158 @@
         const confirmationModal = document.getElementById('confirmationModal');
         const orderNumberDisplay = document.getElementById('orderNumberDisplay');
         const closeModalButton = document.getElementById('closeModal');
+        const readyNotification = document.getElementById('readyNotification'); // NOUVEAU
 
-        // --- FONCTIONS ---
+        // [Reste des fonctions renderMenu, updateTotal, generateOrderNumber inchangées]
+
         function renderMenu() {
             menuItemsContainer.innerHTML = '';
             menuData.forEach(item => {
                 const quantity = cart[item.id] || 0;
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'menu-item';
-                item
+                itemDiv.innerHTML = `
+                    <div class="item-info">
+                        <h2>${item.name}</h2>
+                        <p>${item.price.toFixed(2)} €</p>
+                    </div>
+                    <div class="item-controls">
+                        <button data-id="${item.id}" data-action="decrease" ${quantity === 0 ? 'disabled' : ''}>-</button>
+                        <span>${quantity}</span>
+                        <button data-id="${item.id}" data-action="increase">+</button>
+                    </div>
+                `;
+                menuItemsContainer.appendChild(itemDiv);
+            });
+            updateTotal();
+        }
+
+        function updateTotal() {
+            let total = 0;
+            for (const itemId in cart) {
+                const item = menuData.find(m => m.id === itemId);
+                if (item) {
+                    total += item.price * cart[itemId];
+                }
+            }
+            total = parseFloat(total.toFixed(2)); 
+            cartTotalSpan.textContent = total.toFixed(2);
+            validateOrderButton.disabled = total === 0;
+        }
+
+        function generateOrderNumber() {
+            orderCounter++;
+            localStorage.setItem('orderCounter', orderCounter);
+            return `M-${orderCounter}`;
+        }
+
+        function saveOrder(orderNumber, total, items) {
+            const newOrder = {
+                numero_client: orderNumber,
+                date_heure_creation: new Date().toISOString(),
+                statut: 'EN_ATTENTE_PAIEMENT',
+                total_montant: total,
+                details_articles: items,
+                point_de_vente_id: 'Store_001'
+            };
+
+            supabase
+                .from('orders')
+                .insert([newOrder])
+                .then(response => {
+                    if (response.error) {
+                        console.error("Erreur Supabase: ", response.error);
+                        alert("Erreur d'envoi de la commande !");
+                    } else {
+                        console.log("Commande envoyée à Supabase !");
+                    }
+                })
+                .catch(error => console.error("Erreur de connexion Supabase: ", error));
+        }
+
+        // --- GESTION DU REALTIME ET NOTIFICATION DU CLIENT ---
+        function playNotificationSound() {
+            // Utiliser l'API Audio pour jouer un son court
+            const audio = new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/success.mp3'); // Un son de succès simple
+            audio.play().catch(e => console.log('Impossible de jouer le son (bloqué par le navigateur).'));
+        }
+
+        function subscribeToReadyNotifications() {
+            supabase
+                .channel('order-updates')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload) => {
+                    // Si la commande mise à jour est la dernière commande passée par CE client ET que le statut est 'PRETE_RETRAIT'
+                    if (payload.new.numero_client === lastOrderNumber && payload.new.statut === 'PRETE_RETRAIT') {
+                        const orderNum = payload.new.numero_client;
+                        readyNotification.textContent = `🚨 Commande ${orderNum} PRÊTE ! Veuillez la retirer à la caisse.`;
+                        readyNotification.style.display = 'block';
+                        playNotificationSound();
+
+                        // Masquer la notification après 10 secondes
+                        setTimeout(() => {
+                            readyNotification.style.display = 'none';
+                        }, 10000);
+                    }
+                })
+                .subscribe();
+        }
+
+        // --- ÉVÉNEMENTS ---
+        // [Reste des événements (increase/decrease) inchangés]
+
+        menuItemsContainer.addEventListener('click', (event) => {
+            const button = event.target.closest('button');
+            if (button) {
+                const itemId = button.dataset.id;
+                const action = button.dataset.action;
+
+                if (action === 'increase') {
+                    cart[itemId] = (cart[itemId] || 0) + 1;
+                } else if (action === 'decrease') {
+                    if (cart[itemId] && cart[itemId] > 0) {
+                        cart[itemId]--;
+                        if (cart[itemId] === 0) {
+                            delete cart[itemId];
+                        }
+                    }
+                }
+                renderMenu(); 
+            }
+        });
+
+        validateOrderButton.addEventListener('click', () => {
+            const total = parseFloat(cartTotalSpan.textContent);
+            if (total > 0) {
+                const orderNumber = generateOrderNumber();
+                lastOrderNumber = orderNumber; // 🚨 Enregistrer le numéro de commande du client
+                const itemsInOrder = [];
+                for (const itemId in cart) {
+                    const item = menuData.find(m => m.id === itemId);
+                    if (item && cart[itemId] > 0) {
+                        itemsInOrder.push({
+                            nom: item.name,
+                            quantite: cart[itemId],
+                            prix_unitaire: item.price
+                        });
+                    }
+                }
+                saveOrder(orderNumber, total, itemsInOrder);
+
+                orderNumberDisplay.textContent = orderNumber;
+                confirmationModal.style.display = 'flex'; 
+
+                cart = {};
+                renderMenu();
+            }
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            confirmationModal.style.display = 'none';
+        });
+
+        // --- INITIALISATION ---
+        renderMenu();
+        subscribeToReadyNotifications(); // 🚨 Activer l'écoute des mises à jour
+    </script>
+</body>
+</html>

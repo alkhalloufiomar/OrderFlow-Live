@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OrderFlow Beta - Tableau de Bord Opérateur</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
-        // 💡 REMPLACEZ CES VALEURS PAR VOS VRAIES CLÉS SUPABASE
-        const SUPABASE_URL = 'VOTRE_URL_PROJET'; 
-        const SUPABASE_KEY = 'VOTRE_CLE_ANON'; 
+        // *******************************************************************
+        // 🚨 ATTENTION : COLLER VOS CLÉS SUPABASE ICI
+        // *******************************************************************
+        const SUPABASE_URL = 'https://ryziewceezbnnujoopii.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g'; 
+        // *******************************************************************
 
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
@@ -82,7 +87,7 @@
         }
         .order-card h2 {
             margin-top: 0;
-            color: #e67e22; /* Orange pour le numéro */
+            color: #e67e22;
             font-size: 1.5em;
             display: flex;
             justify-content: space-between;
@@ -128,18 +133,28 @@
         .order-card button:hover {
             background-color: #27ae60;
         }
-        .no-orders {
-            text-align: center;
-            color: #7f8c8d;
-            font-style: italic;
-            padding: 30px;
-            grid-column: 1 / -1;
+        /* Style pour la notification de commande prête */
+        #readyAlert {
+            background-color: #e67e22;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none; /* Caché par défaut */
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            from { opacity: 1; }
+            to { opacity: 0.7; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Tableau de Bord Opérateur</h1>
+
+        <div id="readyAlert"></div>
 
         <div class="search-section">
             <input type="text" id="orderSearchInput" placeholder="Rechercher par numéro de commande (ex: M-123)">
@@ -153,28 +168,25 @@
     </div>
 
     <script>
-        // --- ÉLÉMENTS DU DOM ---
         const orderSearchInput = document.getElementById('orderSearchInput');
         const searchOrderButton = document.getElementById('searchOrderButton');
         const pendingOrdersList = document.getElementById('pending-orders-list');
         const noOrdersMessage = document.getElementById('noOrdersMessage');
+        const readyAlert = document.getElementById('readyAlert'); // NOUVEAU
 
-        // Note: L'objet 'supabase' est initialisé dans le <head>
+        // [Reste des fonctions formatDateTime, fetchAndRenderOrders inchangées]
 
-        // --- FONCTIONS DE GESTION DES DONNÉES ET D'AFFICHAGE ---
-        
         function formatDateTime(isoString) {
             const date = new Date(isoString);
             return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); 
         }
 
         async function fetchAndRenderOrders(filterNum = null) {
-            // Récupérer les commandes en attente de paiement
             const { data: orders, error } = await supabase
                 .from('orders')
                 .select('*')
                 .eq('statut', 'EN_ATTENTE_PAIEMENT')
-                .order('created_at', { ascending: true }); // Utilisation de created_at si date_heure_creation n'existe pas encore
+                .order('created_at', { ascending: true }); 
 
             if (error) {
                 console.error('Erreur Supabase:', error);
@@ -214,13 +226,38 @@
             }
         }
 
+        // --- GESTION DU REALTIME ET NOTIFICATION CAISSE ---
+        function playNotificationSound() {
+            const audio = new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/success.mp3');
+            audio.play().catch(e => console.log('Impossible de jouer le son (bloqué par le navigateur).'));
+        }
+
+        function subscribeToReadyNotifications() {
+            supabase
+                .channel('order-updates-caisse')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload) => {
+                    // Si le statut est mis à jour à 'PRETE_RETRAIT'
+                    if (payload.new.statut === 'PRETE_RETRAIT') {
+                        const orderNum = payload.new.numero_client;
+                        readyAlert.textContent = `✅ COMMANDE PRÊTE : ${orderNum} est prête pour le retrait !`;
+                        readyAlert.style.display = 'block';
+                        playNotificationSound();
+
+                        // Masquer l'alerte après 15 secondes
+                        setTimeout(() => {
+                            readyAlert.style.display = 'none';
+                        }, 15000);
+                    }
+                })
+                .subscribe();
+        }
+
         // --- ÉVÉNEMENTS ---
         pendingOrdersList.addEventListener('click', async (event) => {
             const button = event.target.closest('button');
             if (button) {
                 const orderIdToActivate = button.dataset.id;
                 
-                // Mise à jour du statut sur Supabase
                 const { error } = await supabase
                     .from('orders')
                     .update({ statut: 'PAYEE_ACTIVE' }) 
@@ -250,6 +287,7 @@
         setInterval(fetchAndRenderOrders, 5000); 
 
         fetchAndRenderOrders();
+        subscribeToReadyNotifications(); // 🚨 Activer l'écoute des mises à jour
     </script>
 </body>
 </html>
