@@ -5,21 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OrderFlow – Votre Commande</title>
 
-    <!-- Supabase -->
-    <script type="module">
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <script>
+        // *******************************************************************
+        // 🔑 REMPLACER PAR VOS CLÉS SUPABASE COMPLÈTES
+        // *******************************************************************
         const SUPABASE_URL = "https://ryziewceezbnnujoopii.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g";
-
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        window.supabase = supabase;
+        // *******************************************************************
+        
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
 
-    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
     <style>
         :root {
             --bg: #f6f7fb;
@@ -31,189 +30,29 @@
             --subtext: #636e72;
             --radius: 14px;
         }
-
-        body {
-            margin: 0;
-            background: var(--bg);
-            font-family: "Poppins", sans-serif;
-            display: flex;
-            justify-content: center;
-            padding: 25px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 480px;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 25px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.08);
-            animation: fadeIn .4s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--text);
-            font-weight: 600;
-            margin-bottom: 25px;
-            font-size: 1.8em;
-        }
-
-        .menu-item {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 18px;
-            margin-bottom: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-        }
-
-        .item-info h2 {
-            margin: 0;
-            color: var(--text);
-            font-size: 1.1em;
-        }
-
-        .item-info p {
-            margin: 3px 0 0;
-            font-size: 0.9em;
-            color: var(--subtext);
-        }
-
-        .item-controls {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-        }
-
-        .item-controls button {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: none;
-            font-size: 1.3em;
-            font-weight: bold;
-            cursor: pointer;
-            background: #ececec;
-            transition: 0.2s;
-        }
-
-        .item-controls span {
-            font-size: 1.2em;
-            font-weight: 600;
-            width: 24px;
-            text-align: center;
-        }
-
-        .item-controls button:hover {
-            background: #dcdcdc;
-        }
-
-        .total-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 2px solid #eee;
-        }
-
-        .total-section p {
-            font-size: 1.4em;
-            font-weight: 600;
-        }
-
-        #validate-order {
-            background: var(--primary);
-            color: white;
-            padding: 14px 28px;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 1.2em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        #validate-order:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        #validate-order:hover:not(:disabled) {
-            background: var(--primary-dark);
-        }
-
-        /* CONFIRMATION MODAL */
-        .confirmation-modal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: var(--radius);
-            text-align: center;
-            width: 90%;
-            max-width: 380px;
-            animation: zoomIn .3s ease;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-        }
-
-        @keyframes zoomIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to   { transform: scale(1); opacity: 1; }
-        }
-
-        .modal-content h2 {
-            color: var(--success);
-            margin-bottom: 14px;
-        }
-
-        .modal-content button {
-            margin-top: 20px;
-            padding: 10px 22px;
-            background: var(--primary);
-            border: none;
-            color: white;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-size: 1em;
-        }
-
-        /* 🔔 Notification moderne */
-        #readyNotification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--success);
-            color: white;
-            padding: 18px 26px;
-            font-size: 1.1em;
-            border-radius: var(--radius);
-            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-            display: none;
-            animation: slideUp .4s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to   { transform: translateY(0); opacity: 1; }
-        }
+        body { margin: 0; background: var(--bg); font-family: "Poppins", sans-serif; display: flex; justify-content: center; padding: 25px; }
+        .container { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: var(--radius); padding: 25px; box-shadow: 0 6px 25px rgba(0,0,0,0.08); animation: fadeIn .4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { text-align: center; color: var(--text); font-weight: 600; margin-bottom: 25px; font-size: 1.8em; }
+        .menu-item { background: var(--card-bg); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 3px 10px rgba(0,0,0,0.06); }
+        .item-info h2 { margin: 0; color: var(--text); font-size: 1.1em; }
+        .item-info p { margin: 3px 0 0; font-size: 0.9em; color: var(--subtext); }
+        .item-controls { display: flex; align-items: center; gap: 13px; }
+        .item-controls button { width: 38px; height: 38px; border-radius: 50%; border: none; font-size: 1.3em; font-weight: bold; cursor: pointer; background: #ececec; transition: 0.2s; }
+        .item-controls span { font-size: 1.2em; font-weight: 600; width: 24px; text-align: center; }
+        .item-controls button:hover { background: #dcdcdc; }
+        .total-section { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding-top: 20px; border-top: 2px solid #eee; }
+        .total-section p { font-size: 1.4em; font-weight: 600; }
+        #validate-order { background: var(--primary); color: white; padding: 14px 28px; border: none; border-radius: var(--radius); font-size: 1.2em; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        #validate-order:disabled { opacity: 0.4; cursor: not-allowed; }
+        #validate-order:hover:not(:disabled) { background: var(--primary-dark); }
+        .confirmation-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: white; padding: 30px; border-radius: var(--radius); text-align: center; width: 90%; max-width: 380px; animation: zoomIn .3s ease; box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-content h2 { color: var(--success); margin-bottom: 14px; }
+        .modal-content button { margin-top: 20px; padding: 10px 22px; background: var(--primary); border: none; color: white; border-radius: var(--radius); cursor: pointer; font-size: 1em; }
+        #readyNotification { position: fixed; bottom: 20px; right: 20px; background: var(--success); color: white; padding: 18px 26px; font-size: 1.1em; border-radius: var(--radius); box-shadow: 0 4px 14px rgba(0,0,0,0.3); display: none; animation: slideUp .4s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 
@@ -221,14 +60,12 @@
     <div class="container">
         <h1>Votre Menu</h1>
         <div id="menu-items"></div>
-
         <div class="total-section">
             <p>Total : <span id="cart-total">0.00</span> €</p>
             <button id="validate-order" disabled>Valider</button>
         </div>
     </div>
 
-    <!-- MODAL -->
     <div id="confirmationModal" class="confirmation-modal">
         <div class="modal-content">
             <h2>Commande enregistrée !</h2>
@@ -237,10 +74,8 @@
             <button id="closeModal">OK</button>
         </div>
     </div>
-
     <div id="readyNotification"></div>
 
-    <!-- ⭐ JS COMPLET ⭐ -->
     <script>
         const menuData = [
             { id: 'burger', name: 'Big Burger', price: 9.50 },
@@ -305,13 +140,28 @@
                 date_heure_creation: new Date().toISOString(),
                 statut: 'EN_ATTENTE_PAIEMENT',
                 total_montant: total,
-                details_articles: items,
+                details_articles: items, 
                 point_de_vente_id: 'Store_001'
             };
 
-            supabase.from("orders").insert([newOrder]);
-        }
+            supabase.from("orders")
+                .insert([newOrder])
+                .then(({ error }) => {
+                    if (error) {
+                        console.error("Erreur Supabase (Vérifier RLS) : ", error);
+                        alert(`Erreur: Impossible d'envoyer la commande. Vérifiez RLS (Row Level Security) sur la table 'orders'.`);
+                        return; 
+                    }
+                    console.log("Commande insérée avec succès dans Supabase.");
+                    
+                    orderNumberDisplay.textContent = orderNumber;
+                    confirmationModal.style.display = "flex";
 
+                    cart = {};
+                    renderMenu();
+                });
+        }
+        
         function subscribeToReadyNotifications() {
             supabase
                 .channel('order-updates')
@@ -359,14 +209,8 @@
                     prix_unitaire: item.price
                 };
             });
-
+            
             saveOrder(orderNumber, total, items);
-
-            orderNumberDisplay.textContent = orderNumber;
-            confirmationModal.style.display = "flex";
-
-            cart = {};
-            renderMenu();
         });
 
         closeModalButton.addEventListener('click', () => {
@@ -374,7 +218,7 @@
         });
 
         renderMenu();
-        subscribeToReadyNotifications();
+        subscribeToReadyNotifications(); 
     </script>
 </body>
 </html>

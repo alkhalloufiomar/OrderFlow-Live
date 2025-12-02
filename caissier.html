@@ -3,291 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrderFlow Beta - Tableau de Bord Opérateur</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>OrderFlow – Caisse</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
         // *******************************************************************
-        // 🚨 ATTENTION : COLLER VOS CLÉS SUPABASE ICI
+        // 🔑 REMPLACER PAR VOS CLÉS SUPABASE COMPLÈTES
         // *******************************************************************
-        const SUPABASE_URL = 'https://ryziewceezbnnujoopii.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g'; 
+        const SUPABASE_URL = 'https://ryziewceezbnnujoopii.supabase.co';
+        // Utilisez la clé complète
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g';
         // *******************************************************************
-
+        
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            background-color: #f0f2f5;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 800px;
-            padding: 30px;
-            box-sizing: border-box;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.8em;
-        }
-        .search-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-        .search-section input {
-            flex-grow: 1;
-            padding: 10px 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 1em;
-        }
-        .search-section button {
-            background-color: #3498db;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .search-section button:hover {
-            background-color: #2980b9;
-        }
-        #pending-orders-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-        .order-card {
-            background-color: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .order-card h2 {
-            margin-top: 0;
-            color: #e67e22;
-            font-size: 1.5em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .order-card h2 span {
-            font-size: 0.8em;
-            color: #7f8c8d;
-        }
-        .order-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 15px 0;
-            border-top: 1px dashed #eee;
-            padding-top: 15px;
-        }
-        .order-card ul li {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.95em;
-        }
-        .order-card .order-total {
-            font-size: 1.2em;
-            font-weight: bold;
-            text-align: right;
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 2px solid #e0e0e0;
-            color: #2ecc71;
-        }
-        .order-card button {
-            background-color: #2ecc71;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 15px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 20px;
-        }
-        .order-card button:hover {
-            background-color: #27ae60;
-        }
-        /* Style pour la notification de commande prête */
-        #readyAlert {
-            background-color: #e67e22;
-            color: white;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            display: none; /* Caché par défaut */
-            animation: pulse 1s infinite alternate;
-        }
-        @keyframes pulse {
-            from { opacity: 1; }
-            to { opacity: 0.7; }
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; margin-bottom: 25px; }
+        .order-card { background: #fff3e0; border-left: 5px solid #ff9800; padding: 15px; margin-bottom: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .order-card h2 { margin: 0; color: #e65100; font-size: 1.2em; }
+        .order-card button { background-color: #4CAF50; color: white; border: none; padding: 10px 15px; text-align: center; text-decoration: none; display: inline-block; font-size: 14px; border-radius: 6px; cursor: pointer; transition: background-color 0.3s; }
+        .order-card button:hover { background-color: #388e3c; }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1>Tableau de Bord Opérateur</h1>
-
-        <div id="readyAlert"></div>
-
-        <div class="search-section">
-            <input type="text" id="orderSearchInput" placeholder="Rechercher par numéro de commande (ex: M-123)">
-            <button id="searchOrderButton">Rechercher</button>
-        </div>
-
-        <h2>Commandes en Attente de Paiement</h2>
+        <h1>Commandes à Payer</h1>
         <div id="pending-orders-list">
-            <p class="no-orders" id="noOrdersMessage">Aucune commande en attente.</p>
+            <p>Chargement des commandes...</p>
         </div>
     </div>
 
     <script>
-        const orderSearchInput = document.getElementById('orderSearchInput');
-        const searchOrderButton = document.getElementById('searchOrderButton');
-        const pendingOrdersList = document.getElementById('pending-orders-list');
-        const noOrdersMessage = document.getElementById('noOrdersMessage');
-        const readyAlert = document.getElementById('readyAlert'); // NOUVEAU
-
-        // [Reste des fonctions formatDateTime, fetchAndRenderOrders inchangées]
-
-        function formatDateTime(isoString) {
-            const date = new Date(isoString);
-            return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); 
-        }
-
-        async function fetchAndRenderOrders(filterNum = null) {
-            const { data: orders, error } = await supabase
+        // Récupération des commandes en attente
+        async function renderCashier() {
+            const { data, error } = await supabase
                 .from('orders')
-                .select('*')
+                .select('id, numero_client, total_montant')
                 .eq('statut', 'EN_ATTENTE_PAIEMENT')
-                .order('created_at', { ascending: true }); 
+                .order('created_at', { ascending: true });
+
+            const container = document.getElementById('pending-orders-list');
+            container.innerHTML = '';
 
             if (error) {
-                console.error('Erreur Supabase:', error);
-                pendingOrdersList.innerHTML = '<p class="no-orders">Erreur de connexion à la base de données.</p>';
+                console.error("Erreur de lecture des commandes caisse (Vérifiez RLS SELECT):", error);
+                container.innerHTML = `<p style="color:red;">Erreur de connexion Supabase: ${error.message}</p>`;
                 return;
             }
 
-            pendingOrdersList.innerHTML = '';
-            let hasOrders = false;
+            if (!data || !data.length) {
+                container.innerHTML = '<p>Aucune commande en attente.</p>';
+                return;
+            }
 
-            const filteredOrders = orders.filter(order =>
-                (filterNum ? order.numero_client.toLowerCase().includes(filterNum.toLowerCase()) : true)
-            );
-
-            filteredOrders.forEach(order => {
-                hasOrders = true;
-                const orderCard = document.createElement('div');
-                orderCard.className = 'order-card';
-                orderCard.innerHTML = `
-                    <h2>
-                        Commande ${order.numero_client}
-                        <span>${formatDateTime(order.date_heure_creation || order.created_at)}</span>
-                    </h2>
-                    <ul>
-                        ${order.details_articles.map(item => `
-                            <li>${item.quantite}x ${item.nom} <span>${(item.quantite * item.prix_unitaire).toFixed(2)} €</span></li>
-                        `).join('')}
-                    </ul>
-                    <p class="order-total">Total: ${order.total_montant.toFixed(2)} €</p>
+            data.forEach(order => {
+                const card = document.createElement('div');
+                card.className = 'order-card';
+                card.innerHTML = `
+                    <h2>${order.numero_client} (${order.total_montant.toFixed(2)} €)</h2>
                     <button data-id="${order.id}">Activer & Envoyer en Cuisine</button>
                 `;
-                pendingOrdersList.appendChild(orderCard);
+                container.appendChild(card);
             });
-
-            if (!hasOrders) {
-                pendingOrdersList.innerHTML = '<p class="no-orders">Aucune commande en attente.</p>';
-            }
         }
 
-        // --- GESTION DU REALTIME ET NOTIFICATION CAISSE ---
-        function playNotificationSound() {
-            const audio = new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/success.mp3');
-            audio.play().catch(e => console.log('Impossible de jouer le son (bloqué par le navigateur).'));
-        }
-
-        function subscribeToReadyNotifications() {
-            supabase
-                .channel('order-updates-caisse')
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload) => {
-                    // Si le statut est mis à jour à 'PRETE_RETRAIT'
-                    if (payload.new.statut === 'PRETE_RETRAIT') {
-                        const orderNum = payload.new.numero_client;
-                        readyAlert.textContent = `✅ COMMANDE PRÊTE : ${orderNum} est prête pour le retrait !`;
-                        readyAlert.style.display = 'block';
-                        playNotificationSound();
-
-                        // Masquer l'alerte après 15 secondes
-                        setTimeout(() => {
-                            readyAlert.style.display = 'none';
-                        }, 15000);
-                    }
-                })
-                .subscribe();
-        }
-
-        // --- ÉVÉNEMENTS ---
-        pendingOrdersList.addEventListener('click', async (event) => {
-            const button = event.target.closest('button');
-            if (button) {
-                const orderIdToActivate = button.dataset.id;
-                
-                const { error } = await supabase
-                    .from('orders')
-                    .update({ statut: 'PAYEE_ACTIVE' }) 
-                    .eq('id', orderIdToActivate);
-
-                if (error) {
-                    console.error('Erreur Supabase:', error);
-                } else {
-                    alert(`Commande activée !`);
-                    fetchAndRenderOrders(); 
-                }
+        // Boutons du caissier
+        document.getElementById('pending-orders-list').addEventListener('click', async e => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            
+            const { error } = await supabase.from('orders').update({ statut: 'PAYEE_ACTIVE' }).eq('id', id);
+            
+            if (error) {
+                console.error("Erreur de validation (Vérifiez RLS UPDATE):", error);
+                alert("Erreur: Impossible de valider la commande. Vérifiez RLS pour UPDATE.");
             }
         });
 
-        searchOrderButton.addEventListener('click', () => {
-            const searchTerm = orderSearchInput.value.trim();
-            fetchAndRenderOrders(searchTerm);
-        });
+        // Realtime Supabase
+        supabase.channel('orders-updates-caisse')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                renderCashier();
+            })
+            .subscribe();
 
-        orderSearchInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                searchOrderButton.click();
-            }
-        });
-
-        // --- INITIALISATION et RAFRAÎCHISSEMENT ---
-        setInterval(fetchAndRenderOrders, 5000); 
-
-        fetchAndRenderOrders();
-        subscribeToReadyNotifications(); // 🚨 Activer l'écoute des mises à jour
+        // Initialisation
+        renderCashier();
     </script>
 </body>
 </html>
