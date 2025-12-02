@@ -3,212 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrderFlow Beta - Votre Commande</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <script>
-        // *******************************************************************
-        // 🔑 VOS CLÉS SUPABASE (CORRECTES)
-        // *******************************************************************
-        const SUPABASE_URL = 'https://ryziewceezbnnujoopii.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g'; 
-        // *******************************************************************
+    <title>OrderFlow – Votre Commande</title>
 
-        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <!-- Supabase -->
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        const SUPABASE_URL = "https://ryziewceezbnnujoopii.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g";
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        window.supabase = supabase;
     </script>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --bg: #f6f7fb;
+            --card-bg: #fff;
+            --primary: #ff5722;
+            --primary-dark: #e64a19;
+            --success: #43a047;
+            --text: #2d3436;
+            --subtext: #636e72;
+            --radius: 14px;
+        }
+
         body {
-            font-family: 'Roboto', sans-serif;
             margin: 0;
-            background-color: #f0f2f5;
-            color: #333;
+            background: var(--bg);
+            font-family: "Poppins", sans-serif;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
+            padding: 25px;
         }
+
         .container {
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 450px;
-            padding: 30px;
-            box-sizing: border-box;
+            max-width: 480px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+            animation: fadeIn .4s ease;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
         h1 {
-            color: #2c3e50;
             text-align: center;
-            margin-bottom: 30px;
+            color: var(--text);
+            font-weight: 600;
+            margin-bottom: 25px;
             font-size: 1.8em;
         }
+
         .menu-item {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #eee;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
         }
-        .menu-item:last-child {
-            border-bottom: none;
-        }
+
         .item-info h2 {
             margin: 0;
+            color: var(--text);
             font-size: 1.1em;
-            color: #34495e;
         }
+
         .item-info p {
-            margin: 5px 0 0;
-            color: #7f8c8d;
+            margin: 3px 0 0;
             font-size: 0.9em;
+            color: var(--subtext);
         }
+
         .item-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 13px;
         }
+
         .item-controls button {
-            background-color: #e0e0e0;
-            border: none;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 1.2em;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .item-controls button:hover {
-            background-color: #d0d0d0;
-        }
-        .item-controls span {
+            border: none;
+            font-size: 1.3em;
             font-weight: bold;
-            font-size: 1.1em;
-            width: 20px;
+            cursor: pointer;
+            background: #ececec;
+            transition: 0.2s;
+        }
+
+        .item-controls span {
+            font-size: 1.2em;
+            font-weight: 600;
+            width: 24px;
             text-align: center;
         }
+
+        .item-controls button:hover {
+            background: #dcdcdc;
+        }
+
         .total-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 30px;
+            margin-top: 25px;
             padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
+            border-top: 2px solid #eee;
         }
+
         .total-section p {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin: 0;
+            font-size: 1.4em;
+            font-weight: 600;
         }
-        .total-section button {
-            background-color: #2ecc71;
-            color: #fff;
+
+        #validate-order {
+            background: var(--primary);
+            color: white;
+            padding: 14px 28px;
             border: none;
-            border-radius: 8px;
-            padding: 12px 25px;
-            font-size: 1.1em;
+            border-radius: var(--radius);
+            font-size: 1.2em;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: 0.3s;
         }
-        .total-section button:hover {
-            background-color: #27ae60;
+
+        #validate-order:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
+
+        #validate-order:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        /* CONFIRMATION MODAL */
         .confirmation-modal {
-            display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
             justify-content: center;
             align-items: center;
+            z-index: 100;
         }
+
         .modal-content {
-            background-color: #fefefe;
-            margin: auto;
+            background: white;
             padding: 30px;
-            border-radius: 12px;
+            border-radius: var(--radius);
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             width: 90%;
-            max-width: 400px;
+            max-width: 380px;
+            animation: zoomIn .3s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
         }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+
         .modal-content h2 {
-            color: #2ecc71;
-            margin-bottom: 20px;
-            font-size: 1.6em;
+            color: var(--success);
+            margin-bottom: 14px;
         }
-        .modal-content p {
-            font-size: 1.1em;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-        .modal-content strong {
-            font-size: 1.8em;
-            color: #e67e22;
-            display: block;
-            margin: 15px 0;
-        }
+
         .modal-content button {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
+            margin-top: 20px;
+            padding: 10px 22px;
+            background: var(--primary);
             border: none;
-            border-radius: 5px;
+            color: white;
+            border-radius: var(--radius);
             cursor: pointer;
             font-size: 1em;
         }
-        .modal-content button:hover {
-            background-color: #2980b9;
-        }
-        /* Style pour la notification de commande prête */
+
+        /* 🔔 Notification moderne */
         #readyNotification {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: #e67e22;
+            background: var(--success);
             color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            font-size: 1.2em;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 1001;
+            padding: 18px 26px;
+            font-size: 1.1em;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
             display: none;
+            animation: slideUp .4s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1>OrderFlow Beta - Votre Menu</h1>
-
-        <div id="menu-items">
-            </div>
+        <h1>Votre Menu</h1>
+        <div id="menu-items"></div>
 
         <div class="total-section">
-            <p>Total: <span id="cart-total">0.00</span> €</p>
-            <button id="validate-order" disabled>Valider la commande</button>
+            <p>Total : <span id="cart-total">0.00</span> €</p>
+            <button id="validate-order" disabled>Valider</button>
         </div>
     </div>
 
+    <!-- MODAL -->
     <div id="confirmationModal" class="confirmation-modal">
         <div class="modal-content">
-            <h2>Commande Enregistrée !</h2>
-            <p>Votre commande est en attente de paiement.</p>
-            <p>Numéro de Commande : <strong id="orderNumberDisplay">M-XXX</strong></p>
-            <p>Veuillez vous rendre à la caisse pour payer et activer votre commande.</p>
+            <h2>Commande enregistrée !</h2>
+            <p>Numéro : <strong id="orderNumberDisplay"></strong></p>
+            <p>Veuillez payer à la caisse.</p>
             <button id="closeModal">OK</button>
         </div>
     </div>
 
     <div id="readyNotification"></div>
 
+    <!-- ⭐ JS COMPLET ⭐ -->
     <script>
         const menuData = [
             { id: 'burger', name: 'Big Burger', price: 9.50 },
@@ -253,13 +285,10 @@
 
         function updateTotal() {
             let total = 0;
-            for (const itemId in cart) {
-                const item = menuData.find(m => m.id === itemId);
-                if (item) {
-                    total += item.price * cart[itemId];
-                }
+            for (const id in cart) {
+                const item = menuData.find(m => m.id === id);
+                if (item) total += item.price * cart[id];
             }
-            total = parseFloat(total.toFixed(2)); 
             cartTotalSpan.textContent = total.toFixed(2);
             validateOrderButton.disabled = total === 0;
         }
@@ -280,23 +309,7 @@
                 point_de_vente_id: 'Store_001'
             };
 
-            supabase
-                .from('orders')
-                .insert([newOrder])
-                .then(response => {
-                    if (response.error) {
-                        console.error("Erreur Supabase: ", response.error);
-                        alert("Erreur d'envoi de la commande ! Vérifiez RLS dans Supabase.");
-                    } else {
-                        console.log("Commande envoyée à Supabase !");
-                    }
-                })
-                .catch(error => console.error("Erreur de connexion Supabase: ", error));
-        }
-
-        function playNotificationSound() {
-            const audio = new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/success.mp3'); 
-            audio.play().catch(e => console.log('Impossible de jouer le son (bloqué par le navigateur).'));
+            supabase.from("orders").insert([newOrder]);
         }
 
         function subscribeToReadyNotifications() {
@@ -304,13 +317,11 @@
                 .channel('order-updates')
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload) => {
                     if (payload.new.numero_client === lastOrderNumber && payload.new.statut === 'PRETE_RETRAIT') {
-                        const orderNum = payload.new.numero_client;
-                        readyNotification.textContent = `🚨 Commande ${orderNum} PRÊTE ! Veuillez la retirer à la caisse.`;
-                        readyNotification.style.display = 'block';
-                        playNotificationSound();
+                        readyNotification.textContent = `🚨 Commande ${payload.new.numero_client} prête !`;
+                        readyNotification.style.display = "block";
 
                         setTimeout(() => {
-                            readyNotification.style.display = 'none';
+                            readyNotification.style.display = "none";
                         }, 10000);
                     }
                 })
@@ -319,55 +330,49 @@
 
         menuItemsContainer.addEventListener('click', (event) => {
             const button = event.target.closest('button');
-            if (button) {
-                const itemId = button.dataset.id;
-                const action = button.dataset.action;
+            if (!button) return;
 
-                if (action === 'increase') {
-                    cart[itemId] = (cart[itemId] || 0) + 1;
-                } else if (action === 'decrease') {
-                    if (cart[itemId] && cart[itemId] > 0) {
-                        cart[itemId]--;
-                        if (cart[itemId] === 0) {
-                            delete cart[itemId];
-                        }
-                    }
+            const id = button.dataset.id;
+            const action = button.dataset.action;
+
+            if (action === "increase") {
+                cart[id] = (cart[id] || 0) + 1;
+            } else if (action === "decrease") {
+                if (cart[id] > 0) {
+                    cart[id]--;
+                    if (cart[id] === 0) delete cart[id];
                 }
-                renderMenu(); 
             }
+            renderMenu();
         });
 
         validateOrderButton.addEventListener('click', () => {
             const total = parseFloat(cartTotalSpan.textContent);
-            if (total > 0) {
-                const orderNumber = generateOrderNumber();
-                lastOrderNumber = orderNumber;
-                const itemsInOrder = [];
-                for (const itemId in cart) {
-                    const item = menuData.find(m => m.id === itemId);
-                    if (item && cart[itemId] > 0) {
-                        itemsInOrder.push({
-                            nom: item.name,
-                            quantite: cart[itemId],
-                            prix_unitaire: item.price
-                        });
-                    }
-                }
-                saveOrder(orderNumber, total, itemsInOrder);
+            const orderNumber = generateOrderNumber();
+            lastOrderNumber = orderNumber;
 
-                orderNumberDisplay.textContent = orderNumber;
-                confirmationModal.style.display = 'flex'; 
+            const items = Object.keys(cart).map(id => {
+                const item = menuData.find(m => m.id === id);
+                return {
+                    nom: item.name,
+                    quantite: cart[id],
+                    prix_unitaire: item.price
+                };
+            });
 
-                cart = {};
-                renderMenu();
-            }
+            saveOrder(orderNumber, total, items);
+
+            orderNumberDisplay.textContent = orderNumber;
+            confirmationModal.style.display = "flex";
+
+            cart = {};
+            renderMenu();
         });
 
         closeModalButton.addEventListener('click', () => {
-            confirmationModal.style.display = 'none';
+            confirmationModal.style.display = "none";
         });
 
-        // --- INITIALISATION ---
         renderMenu();
         subscribeToReadyNotifications();
     </script>
