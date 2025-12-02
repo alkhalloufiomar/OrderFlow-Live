@@ -9,14 +9,15 @@
     
     <script>
         // *******************************************************************
-        // 🔑 REMPLACER PAR VOS CLÉS SUPABASE COMPLÈTES
+        // 🔑 VOS CLÉS SUPABASE COMPLÈTES
         // *******************************************************************
         const SUPABASE_URL = 'https://ryziewceezbnnujoopii.supabase.co';
-        // Utilisez la clé complète
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g';
         // *******************************************************************
         
-        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // 🏆 CORRECTION MAJEURE
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -25,7 +26,7 @@
         h1 { text-align: center; color: #ffd700; margin-bottom: 30px; }
         #kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .kds-card { background: #2a2a44; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.3s; }
-        .kds-card.prepared { background: #3c1a4e; border: 3px solid #ff007f; } /* Prête */
+        .kds-card.prepared { background: #3c1a4e; border: 3px solid #ff007f; }
         .kds-card h2 { color: #ffd700; border-bottom: 2px solid #3f3f6e; padding-bottom: 10px; margin-top: 0; font-size: 1.5em; }
         .kds-card ul { list-style: none; padding: 0; margin: 15px 0; }
         .kds-card li { background: #3f3f6e; padding: 8px; margin-bottom: 5px; border-radius: 5px; font-weight: 600; font-size: 0.95em; }
@@ -41,7 +42,6 @@
     </div>
 
     <script>
-        // Récupération des commandes actives pour la cuisine
         async function renderKitchen() {
             const { data, error } = await supabase
                 .from('orders')
@@ -69,13 +69,12 @@
                     case 'PAYEE_ACTIVE': buttonText='Commencer Préparation'; nextStatus='EN_PREPARATION'; break;
                     case 'EN_PREPARATION': buttonText='Marquer Prête'; nextStatus='PRETE_RETRAIT'; break;
                     case 'PRETE_RETRAIT': buttonText='Terminer (Retirée)'; nextStatus='TERMINEE'; break;
-                    default: return; // Ignore les autres statuts
+                    default: return;
                 }
 
                 const card = document.createElement('div');
                 card.className = order.statut === 'PRETE_RETRAIT' ? 'kds-card prepared' : 'kds-card';
                 
-                // Assurez-vous que details_articles est bien un tableau avant de mapper
                 const itemsList = Array.isArray(order.details_articles) ? 
                     order.details_articles.map(item => `<li>${item.quantite}x ${item.nom}</li>`).join('') :
                     '<li>Erreur de détail d\'articles</li>';
@@ -89,7 +88,6 @@
             });
         }
 
-        // Boutons de la cuisine
         document.getElementById('kds-grid').addEventListener('click', async e => {
             const btn = e.target.closest('button');
             if (!btn) return;
@@ -104,14 +102,12 @@
             }
         });
 
-        // Realtime Supabase
         supabase.channel('orders-updates-cuisine')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
                 renderKitchen();
             })
             .subscribe();
 
-        // Initialisation
         renderKitchen();
     </script>
 </body>

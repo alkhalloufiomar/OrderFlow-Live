@@ -9,14 +9,15 @@
     
     <script>
         // *******************************************************************
-        // 🔑 REMPLACER PAR VOS CLÉS SUPABASE COMPLÈTES
+        // 🔑 VOS CLÉS SUPABASE COMPLÈTES
         // *******************************************************************
         const SUPABASE_URL = 'https://ryziewceezbnnujoopii.supabase.co';
-        // Utilisez la clé complète
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5emlld2NlZXpibm51am9vcGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2MTAzMjksImV4cCI6MjA4MDE4NjMyOX0.v75gsiqlfRf7M_PEME_suSHJgiFnqyBhtPWHMoSxu7g';
         // *******************************************************************
         
-        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // 🏆 CORRECTION MAJEURE
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -40,7 +41,6 @@
     </div>
 
     <script>
-        // Récupération des commandes en attente
         async function renderCashier() {
             const { data, error } = await supabase
                 .from('orders')
@@ -73,7 +73,6 @@
             });
         }
 
-        // Boutons du caissier
         document.getElementById('pending-orders-list').addEventListener('click', async e => {
             const btn = e.target.closest('button');
             if (!btn) return;
@@ -94,7 +93,6 @@
             })
             .subscribe();
 
-        // Initialisation
         renderCashier();
     </script>
 </body>
